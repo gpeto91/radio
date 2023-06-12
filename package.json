@@ -4,9 +4,9 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npx tsc",
+    "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "concurrently \"npx tsc --watch --preserveWatchOutput\" \"nodemon -q dist/index.js\""
+    "dev": "concurrently \"tsc --watch --preserveWatchOutput\" \"nodemon -q dist/index.js\""
   },
   "keywords": [],
   "author": "",
