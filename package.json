@@ -1,0 +1,32 @@
+{
+  "name": "guarani-radio-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "dev": "concurrently \"npx tsc --watch --preserveWatchOutput\" \"nodemon -q dist/index.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@dropb/ffprobe": "^3.0.0",
+    "dotenv": "^16.1.4",
+    "express": "^4.18.2",
+    "ffprobe-static": "^3.1.0",
+    "throttle": "^1.0.3",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/ffprobe-static": "^2.0.1",
+    "@types/node": "^20.3.0",
+    "@types/throttle": "^1.0.1",
+    "@types/uuid": "^9.0.2",
+    "concurrently": "^8.2.0",
+    "nodemon": "^2.0.22",
+    "typescript": "^5.1.3"
+  }
+}
