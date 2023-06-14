@@ -15,22 +15,22 @@ const port = process.env.PORT;
   app.get('/', (req: Request, res: Response) => {
     res.send('Guarani Radio API is running');
   });
-
+  
   app.get('/stream', (req: Request, res: Response) => {
+    res.writeHead(200, {
+      'Content-Type': 'audio/mp3',
+      'Transfer-Encoding': 'chunked',
+      'Connection': 'keep-alive',
+      'Cache-Control': 'no-cache',
+    });
+  
     const { id, client } = queue.addClient();
-
-    res
-      .set({
-      "Content-Type": "audio/mp3",
-      "Transfer-Encoding": "chunked",
-      })
-      .status(200);
-
-      client.pipe(res);
-
-      req.on("close", () => {
-        queue.removeClient(id);
-      });
+  
+    client.pipe(res);
+  
+    req.on('close', () => {
+      queue.removeClient(id);
+    });
   });
   
   app.listen(port, () => {
