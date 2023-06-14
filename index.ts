@@ -1,11 +1,15 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import queue from './entities/Queue';
+import media from './entities/Media';
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
+
+app.use(express.json());
+
 
 (async () => {
   await queue.loadTracks("tracks");
@@ -33,7 +37,23 @@ const port = process.env.PORT;
     });
   });
   
+  app.post('/insert', async (req: Request, res: Response) => {
+    const url = req.body?.url;
+  
+    if (!url) return res.status(400).send({ message: "URL do vídeo não fornecida" });
+  
+    try {
+      await media.downloadVideo(url);
+  
+      res.status(200).send({ message: "Vídeo convertido com sucesso" });
+    } catch(err) {
+      res.status(500).send({ message: "Não foi possível baixar o vídeo fornecido" });
+    }
+    
+  });
+  
   app.listen(port, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
   });
+
 })();

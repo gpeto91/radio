@@ -2,41 +2,44 @@ import ytdl from "ytdl-core";
 import ffmpegPath from "@ffmpeg-installer/ffmpeg";
 import ffmpeg from "fluent-ffmpeg";
 import path from "path";
+import queue from "./Queue";
 
 import { IMedia } from "../interfaces/Media";
+import { IQueue } from "../interfaces/Queue";
 
 ffmpeg.setFfmpegPath(ffmpegPath.path);
 
 class Media implements IMedia {
   private basePath: string;
-  
-  constructor() {
+
+  constructor(private queue: IQueue) {
     this.basePath = path.join(__dirname, "../../tracks");
+    this.queue = queue;
   }
 
   async downloadVideo(url: string): Promise<void> {
-      return new Promise(async (resolve, reject) => {
-        const videoStream = ytdl(url, { quality: "highestaudio" });
-        const metadata = await ytdl.getBasicInfo(url, { lang: "pt-BR" });
+    return new Promise(async (resolve, reject) => {
+      const videoStream = ytdl(url, { quality: "highestaudio" });
+      const metadata = await ytdl.getBasicInfo(url, { lang: "pt-BR" });
 
-        const title = metadata.videoDetails.title.replace(/\|/g, "");
+      const title = metadata.videoDetails.title.replace(/\|/g, "");
+      const filepath = `${this.basePath}\\${title}.mp3`;
 
-        const ffmpegCommand = ffmpeg(videoStream)
-          .audioBitrate(128)
-          .toFormat("mp3")
-          .save(`${this.basePath}\\${title}.mp3`)
-          .on("end", () => {
-            resolve();
-          })
-          .on("error", (err) => {
-            reject(err);
-          })
-
-        ffmpegCommand.run();
-      });
+      ffmpeg(videoStream)
+        .audioBitrate(128)
+        .toFormat("mp3")
+        .save(filepath)
+        .on("end", async () => {
+          await this.queue.loadTrack(`tracks\\${title}.mp3`);
+          resolve();
+        })
+        .on("error", (err) => {
+          reject(err);
+        })
+    });
   }
 }
 
-const media = new Media();
+const media = new Media(queue);
 
 export default media;

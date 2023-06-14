@@ -55,8 +55,19 @@ class Queue implements IQueue {
     });
 
     this.tracks = await Promise.all(promises);
-    
+
     console.log(`Loaded ${this.tracks.length} tracks`);
+  }
+
+  async loadTrack(filePath: string): Promise<void> {
+    const bitrate = await this.getTrackBitrate(filePath);
+    const track = { filepath: filePath, bitrate };
+
+    this.tracks.splice(this.index, 0, track);
+
+    this.play();
+
+    console.log(`Loaded a new song!`);
   }
 
   getNextTrack(): TrackType {
@@ -93,7 +104,10 @@ class Queue implements IQueue {
       .pipe(this.throttle)
       .on("data", (chunk) => this.broadcast(chunk))
       .on("end", () => this.play(true))
-      .on("error", () => this.play(true));
+      .on("error", (error) => {
+        console.log(error);
+        this.play(true);
+      });
   }
 
   pause(): void {
@@ -137,11 +151,15 @@ class Queue implements IQueue {
 
     this.clients.set(id, client);
 
+    console.log(`Client ${id} has entered the transmission`);
+
     return { id, client };
   }
 
   removeClient(id: string): void {
     this.clients.delete(id);
+
+    console.log(`Client ${id} left the transmission`);
   }
 }
 

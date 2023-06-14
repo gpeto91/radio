@@ -1,4 +1,6 @@
+import { IQueue } from "./Queue";
+
 export declare class IMedia {
-  constructor();
+  constructor(queue: IQueue);
   downloadVideo(url: string): Promise<void>;
 }
