@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "concurrently \"tsc --watch\" \"nodemon -q dist/index.js\""
+    "start": "npm run build && node dist/index.js",
+    "dev": "concurrently \"tsc --watch\" && \"nodemon -q dist/index.js\""
   },
   "keywords": [],
   "author": "",
