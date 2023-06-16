@@ -49,7 +49,7 @@ app.use(express.json());
   
       res.status(200).send({ message });
     } catch(err) {
-      res.status(500).send({ message: "Não foi possível baixar o vídeo fornecido" });
+      res.status(500).send({ message: err });
     }
     
   });
