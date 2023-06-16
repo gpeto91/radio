@@ -6,7 +6,7 @@
 
 create a folder called ```tracks``` on the root directory
 
-create a .env file in the root directory with a PORT property. You can choose anyone you want. Ex.: PORT=8000
+create a ```.env``` file in the root directory with a PORT property. You can choose anyone you want. Ex.: PORT=8000
 
 ```npm run dev``` - starts a development server that refreshes on change
 
@@ -32,4 +32,4 @@ When a user adds a new song it will be queued right before the first non queued 
 
 ## KNOWN BUGS
 
- * Some titles from youtube's video may have some symbol that breaks the conversion and the ```POST /insert``` will returns a 500 error at the moment.
+ * Some titles from youtube's video may have some symbols that breaks the conversion and the ```POST /insert``` will returns a 500 error at the moment.
