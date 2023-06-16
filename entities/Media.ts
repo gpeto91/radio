@@ -21,6 +21,13 @@ class Media implements IMedia {
     return new Promise(async (resolve, reject) => {
       const videoStream = ytdl(url, { quality: "highestaudio" });
       const metadata = await ytdl.getBasicInfo(url, { lang: "pt-BR" });
+      const category = metadata.videoDetails.category;
+
+      //TODO verificar necessidade da validação por categoria
+      /* if (category !== "Music") {
+        reject("Verifique se o link fornecido é uma música");
+        return;
+      } */
 
       const title = metadata.videoDetails.title.replace(/[&\?:|\\\/|]/gi, "");
       const filepath = `${this.basePath}\\${title}.mp3`;
@@ -28,6 +35,9 @@ class Media implements IMedia {
       ffmpeg(videoStream)
         .audioBitrate(128)
         .toFormat("mp3")
+        .outputOptions(
+          '-metadata', `title=${title}`
+        )
         .save(filepath)
         .on("end", async () => {
           const queueLength = await this.queue.loadTrack(`tracks\\${title}.mp3`);
