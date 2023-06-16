@@ -22,7 +22,7 @@ class Media implements IMedia {
       const videoStream = ytdl(url, { quality: "highestaudio" });
       const metadata = await ytdl.getBasicInfo(url, { lang: "pt-BR" });
 
-      const title = metadata.videoDetails.title.replace(/\|/g, "");
+      const title = metadata.videoDetails.title.replace(/[&\?:|\\\/|]/gi, "");
       const filepath = `${this.basePath}\\${title}.mp3`;
 
       ffmpeg(videoStream)
