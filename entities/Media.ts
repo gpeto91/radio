@@ -17,7 +17,7 @@ class Media implements IMedia {
     this.queue = queue;
   }
 
-  async downloadVideo(url: string): Promise<void> {
+  async downloadVideo(url: string): Promise<number> {
     return new Promise(async (resolve, reject) => {
       const videoStream = ytdl(url, { quality: "highestaudio" });
       const metadata = await ytdl.getBasicInfo(url, { lang: "pt-BR" });
@@ -30,8 +30,8 @@ class Media implements IMedia {
         .toFormat("mp3")
         .save(filepath)
         .on("end", async () => {
-          await this.queue.loadTrack(`tracks\\${title}.mp3`);
-          resolve();
+          const queueLength = await this.queue.loadTrack(`tracks\\${title}.mp3`);
+          resolve(queueLength);
         })
         .on("error", (err) => {
           reject(err);

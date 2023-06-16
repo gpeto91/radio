@@ -51,7 +51,7 @@ class Queue implements IQueue {
     const promises = filepaths.map(async (filepath) => {
       const bitrate = await this.getTrackBitrate(filepath);
 
-      return { filepath, bitrate };
+      return { filepath, bitrate, queue: false };
     });
 
     this.tracks = await Promise.all(promises);
@@ -59,15 +59,32 @@ class Queue implements IQueue {
     console.log(`Loaded ${this.tracks.length} tracks`);
   }
 
-  async loadTrack(filePath: string): Promise<void> {
+  async loadTrack(filePath: string): Promise<number> {
     const bitrate = await this.getTrackBitrate(filePath);
-    const track = { filepath: filePath, bitrate };
-
-    this.tracks.splice(this.index, 0, track);
-
-    this.play();
+    const track = { filepath: filePath, bitrate, queue: true };
 
     console.log(`Loaded a new song!`);
+
+    return this.handleQueue(track);
+  }
+
+  handleQueue(track: TrackType): number {
+      const temp = this.tracks.slice(this.index);
+      const find = temp.findIndex((track) => !track.queue);
+      const position = find === -1 ? 0 : find;
+      let queueLength;
+
+      this.tracks.splice((position + this.index), 0, track);
+
+      this.play();
+
+      queueLength = this.tracks.filter((track) => track.queue).length - 1;
+
+      if (this.currentTrack?.queue) {
+        queueLength--;
+      }
+
+      return queueLength;
   }
 
   getNextTrack(): TrackType {
@@ -103,7 +120,15 @@ class Queue implements IQueue {
     this.stream
       .pipe(this.throttle)
       .on("data", (chunk) => this.broadcast(chunk))
-      .on("end", () => this.play(true))
+      .on("end", () => {
+        if (this.currentTrack && this.currentTrack?.queue) {
+          this.currentTrack.queue = false;
+
+          this.tracks.splice(this.index - 1, 1, this.currentTrack);
+        }
+        
+        this.play(true)
+      })
       .on("error", (error) => {
         console.log(error);
         this.play(true);

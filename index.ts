@@ -43,9 +43,11 @@ app.use(express.json());
     if (!url) return res.status(400).send({ message: "URL do vídeo não fornecida" });
   
     try {
-      await media.downloadVideo(url);
+      const queueLength = await media.downloadVideo(url);
+
+      const message = queueLength === 0 ? "Música adiciona à lista. Sua música será a próxima!" : queueLength === 1 ? "Música adiciona à lista. Tem uma música a frente da sua." : `Música adicionada à lista. Tem ${queueLength} músicas na frente da sua.`
   
-      res.status(200).send({ message: "Vídeo convertido com sucesso" });
+      res.status(200).send({ message });
     } catch(err) {
       res.status(500).send({ message: "Não foi possível baixar o vídeo fornecido" });
     }
