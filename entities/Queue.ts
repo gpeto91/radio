@@ -62,8 +62,9 @@ class Queue implements IQueue {
   async loadTrack(filePath: string): Promise<number> {
     const bitrate = await this.getTrackBitrate(filePath);
     const track = { filepath: filePath, bitrate, queue: true };
+    const title = filePath.split("\\")[1].replace(".mp3", "");
 
-    console.log(`Loaded a new song!`);
+    console.log(`Loaded a new song! ${title}`);
 
     return this.handleQueue(track);
   }

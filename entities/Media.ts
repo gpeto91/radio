@@ -34,7 +34,8 @@ class Media implements IMedia {
           resolve(queueLength);
         })
         .on("error", (err) => {
-          reject(err);
+          console.log(`Erro no título:`, title);
+          reject("Não foi possível baixar o link fornecido");
         })
     });
   }
