@@ -29,7 +29,7 @@ export declare class IQueue {
     client: PassThrough;
   };
   removeClient(id: string): void;
-  loadTracks(dir: string): Promise<void>;
+  loadTracks(dir: string): void;
   loadTrack(filePath: string, metadata: MetadataType, user?: string): Promise<number>;
   handleQueue(track: TrackType): number;
   getTrackBitrate(filePath: string): Promise<number>;

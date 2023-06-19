@@ -49,7 +49,7 @@ class Queue implements IQueue {
     return bitrate ? parseInt(bitrate) : 128000;
   }
 
-  async loadTracks(dir: string): Promise<void> {
+  loadTracks(dir: string): void {
     fs.readFile(`${dir}/playlist.json`, "utf-8", (err, data) => {
       if (err) {
         console.log("Erro ao abrir arquivo da playlist");
@@ -59,22 +59,11 @@ class Queue implements IQueue {
       const playlist: PlaylistFile = JSON.parse(data);
 
       this.tracks = playlist.tracks;
+
+      console.log(`Loaded ${this.tracks.length} tracks`);
+
+      if (this.tracks.length) this.play();
     });
-    /* let filenames = await readdir(dir);
-
-    filenames = filenames.filter((filename) => extname(filename) === ".mp3");
-
-    const filepaths = filenames.map((filename) => join(dir, filename));
-
-    const promises = filepaths.map(async (filepath) => {
-      const bitrate = await this.getTrackBitrate(filepath);
-
-      return { filepath, bitrate, queue: false };
-    });
-
-    this.tracks = await Promise.all(promises);
-
-    console.log(`Loaded ${this.tracks.length} tracks`); */
   }
 
   async loadTrack(filePath: string, metadata: MetadataType, user?: string): Promise<number> {
@@ -88,30 +77,40 @@ class Queue implements IQueue {
   }
 
   handleQueue(track: TrackType): number {
-      const temp = this.tracks.slice(this.index);
-      const find = temp.findIndex((track) => !track.queue);
-      const position = find === -1 ? 0 : find;
-      let queueLength;
+    const temp = this.tracks.slice(this.index);
+    const find = temp.findIndex((track) => !track.queue);
+    const position = find === -1 ? 0 : find;
+    const playlist: PlaylistFile = { tracks: [] }
+    let queueLength;
 
-      this.tracks.splice((position + this.index), 0, track);
+    this.tracks.splice((position + this.index), 0, track);
 
-      this.play();
+    playlist.tracks = this.tracks;
 
-      queueLength = this.tracks.filter((track) => track.queue).length - 1;
+    fs.writeFile(`tracks/playlist.json`, JSON.stringify(playlist), (err) => {
+      if (err) console.log("Não foi possível salvar o arquivo da playlist");
+      else console.log("Playlist salva com sucesso");
+    });
 
-      if (this.currentTrack?.queue) {
-        queueLength--;
-      }
+    if (!this.playing) this.play(true);
 
-      return queueLength;
+    queueLength = this.tracks.filter((track) => track.queue).length - 1;
+
+    if (this.currentTrack?.queue && this.tracks.length > 1) {
+      queueLength--;
+    }
+
+    return queueLength;
   }
 
   getNextTrack(): TrackType {
-    if (this.index >= this.tracks.length - 1) {
+    if (this.index >= this.tracks.length) {
       this.index = 0;
     }
 
     const track = this.tracks[this.index++];
+
+    console.log("Musica atual:", track.metadata.title);
 
     this.currentTrack = track;
 
@@ -145,11 +144,20 @@ class Queue implements IQueue {
       .on("data", (chunk) => this.broadcast(chunk))
       .on("end", () => {
         if (this.currentTrack && this.currentTrack?.queue) {
+          const playlist: PlaylistFile = { tracks: [] };
+          
           this.currentTrack.queue = false;
 
           this.tracks.splice(this.index - 1, 1, this.currentTrack);
+
+          playlist.tracks = this.tracks;
+
+          fs.writeFile(`tracks-2/playlist.json`, JSON.stringify(playlist), (err) => {
+            if (err) console.log("Não foi possível salvar o arquivo da playlist");
+            else console.log("Playlist atualizada com sucesso");
+          });
         }
-        
+
         this.play(true)
       })
       .on("error", (error) => {
