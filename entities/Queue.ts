@@ -9,6 +9,7 @@ import { ReadStream, createReadStream } from "fs";
 import Throttle from "throttle";
 import { PassThrough } from "stream";
 import { v4 as uuid } from "uuid";
+import { Server } from "socket.io";
 
 ffprobe.path = ffprobeStatic.path;
 
@@ -16,10 +17,11 @@ class Queue implements IQueue {
   private clients: Map<string, PassThrough>;
   private tracks: TrackType[];
   private index: number;
-  private currentTrack: TrackType | undefined;
+  public currentTrack: TrackType | undefined;
   private stream: ReadStream | undefined;
   private throttle: Throttle;
   private playing: boolean;
+  private io: Server | null;
 
   constructor() {
     this.clients = new Map();
@@ -27,6 +29,11 @@ class Queue implements IQueue {
     this.index = 0;
     this.throttle = new Throttle(128000 / 8);
     this.playing = false;
+    this.io = null;
+  }
+
+  loadIo(io: Server): void {
+      this.io = io;
   }
 
   broadcast(chunk: Buffer): void {
@@ -119,6 +126,10 @@ class Queue implements IQueue {
     console.log("Starting audio stream");
 
     this.stream = createReadStream(track.filepath);
+
+    setTimeout(() => {
+      this.io?.emit("new-track", { user: track.user, metadata: track.metadata });
+    }, 5000);
   }
 
   async start(): Promise<void> {

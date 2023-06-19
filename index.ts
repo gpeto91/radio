@@ -1,4 +1,6 @@
 import express, { Express, Request, Response } from 'express';
+import { Server } from "socket.io";
+import http from "http";
 import cors from 'cors';
 import dotenv from 'dotenv';
 import queue from './entities/Queue';
@@ -8,15 +10,15 @@ dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(cors());
 app.use(express.json());
 
-
 (async () => {
-  await queue.loadTracks("tracks");
-
-  queue.play();
+  queue.loadTracks("tracks");
+  queue.loadIo(io);
 
   app.get('/', (req: Request, res: Response) => {
     res.send('Guarani Radio API is running');
@@ -46,6 +48,8 @@ app.use(express.json());
     const artist = req.body.artist;
   
     if (!url) return res.status(400).send({ message: "URL do vídeo não fornecida" });
+    if (!title) return res.status(400).send({ message: "Título da música não fornecida" });
+    if (!artist) return res.status(400).send({ message: "Artista da música não fornecido" });
   
     try {
       const queueLength = await media.downloadVideo(url, title, artist, user);
@@ -58,8 +62,22 @@ app.use(express.json());
     }
     
   });
+
+  io.on("connection", (socket) => {
+    console.log("socket user connected:", socket.id);
+
+    socket.on("disconnect", () => {
+      console.log("socket user disconnected:", socket.id);
+    })
+
+    if (queue.currentTrack) {
+      const { user, metadata } = queue.currentTrack;
+      socket.emit("new-track", { user, metadata });
+    }
+    
+  });
   
-  app.listen(port, () => {
+  server.listen(port, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
   });
 

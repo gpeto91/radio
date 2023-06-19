@@ -1,3 +1,4 @@
+import { Server } from "socket.io";
 import { PassThrough } from "stream";
 
 export type TrackType = { 
@@ -39,4 +40,5 @@ export declare class IQueue {
   play(useNewTrack?: boolean): void;
   loadTrackStream(): void;
   start(): Promise<void>;
+  loadIo(io: Server): void;
 }
