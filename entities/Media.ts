@@ -17,11 +17,11 @@ class Media implements IMedia {
     this.queue = queue;
   }
 
-  async downloadVideo(url: string): Promise<number> {
+  async downloadVideo(url: string, title: string, artist: string, user?: string): Promise<number> {
     return new Promise(async (resolve, reject) => {
       const videoStream = ytdl(url, { quality: "highestaudio" });
       const metadata = await ytdl.getBasicInfo(url, { lang: "pt-BR" });
-      const category = metadata.videoDetails.category;
+      // const category = metadata.videoDetails.category;
 
       //TODO verificar necessidade da validação por categoria
       /* if (category !== "Music") {
@@ -29,22 +29,22 @@ class Media implements IMedia {
         return;
       } */
 
-      const title = metadata.videoDetails.title.replace(/[&\?:|\\\/|]/gi, "");
-      const filepath = `${this.basePath}\\${title}.mp3`;
+      const trackTitle = metadata.videoDetails.title.replace(/[&\?:|\\\/|]/gi, "");
+      const filepath = `${this.basePath}\\${trackTitle}.mp3`;
 
       ffmpeg(videoStream)
         .audioBitrate(128)
         .toFormat("mp3")
         .outputOptions(
-          '-metadata', `title=${title}`
+          '-metadata', `title=${trackTitle}`
         )
         .save(filepath)
         .on("end", async () => {
-          const queueLength = await this.queue.loadTrack(`tracks\\${title}.mp3`);
+          const queueLength = await this.queue.loadTrack(`tracks\\${trackTitle}.mp3`, { title, artist }, user);
           resolve(queueLength);
         })
         .on("error", (err) => {
-          console.log(`Erro no título:`, title);
+          console.log(`Erro no título:`, trackTitle);
           reject("Não foi possível baixar o link fornecido");
         })
     });

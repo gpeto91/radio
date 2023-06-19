@@ -1,7 +1,8 @@
 import { readdir } from "fs/promises";
 import { extname, join } from "path";
+import fs from "fs";
 
-import { IQueue, TrackType } from "../interfaces/Queue";
+import { IQueue, MetadataType, PlaylistFile, TrackType } from "../interfaces/Queue";
 import { ffprobe } from "@dropb/ffprobe";
 import ffprobeStatic from "ffprobe-static";
 import { ReadStream, createReadStream } from "fs";
@@ -42,7 +43,17 @@ class Queue implements IQueue {
   }
 
   async loadTracks(dir: string): Promise<void> {
-    let filenames = await readdir(dir);
+    fs.readFile(`${dir}/playlist.json`, "utf-8", (err, data) => {
+      if (err) {
+        console.log("Erro ao abrir arquivo da playlist");
+        throw new Error("Erro ao abrir arquivo da playlist");
+      }
+
+      const playlist: PlaylistFile = JSON.parse(data);
+
+      this.tracks = playlist.tracks;
+    });
+    /* let filenames = await readdir(dir);
 
     filenames = filenames.filter((filename) => extname(filename) === ".mp3");
 
@@ -56,12 +67,12 @@ class Queue implements IQueue {
 
     this.tracks = await Promise.all(promises);
 
-    console.log(`Loaded ${this.tracks.length} tracks`);
+    console.log(`Loaded ${this.tracks.length} tracks`); */
   }
 
-  async loadTrack(filePath: string): Promise<number> {
+  async loadTrack(filePath: string, metadata: MetadataType, user?: string): Promise<number> {
     const bitrate = await this.getTrackBitrate(filePath);
-    const track = { filepath: filePath, bitrate, queue: true };
+    const track: TrackType = { filepath: filePath, bitrate, queue: true, user: user || "", metadata };
     const title = filePath.split("\\")[1].replace(".mp3", "");
 
     console.log(`Loaded a new song! ${title}`);

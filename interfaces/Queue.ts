@@ -1,6 +1,24 @@
 import { PassThrough } from "stream";
 
-export type TrackType = { filepath: string, bitrate: number, queue: boolean };
+export type TrackType = { 
+  filepath: string,
+  bitrate: number,
+  queue: boolean,
+  user: string;
+  metadata: {
+    title: string;
+    artist: string;
+  }
+};
+
+export type MetadataType = {
+  title: string;
+  artist: string;
+}
+
+export interface PlaylistFile {
+  tracks: TrackType[];
+}
 
 export declare class IQueue {
   constructor();
@@ -11,7 +29,7 @@ export declare class IQueue {
   };
   removeClient(id: string): void;
   loadTracks(dir: string): Promise<void>;
-  loadTrack(filePath: string): Promise<number>;
+  loadTrack(filePath: string, metadata: MetadataType, user?: string): Promise<number>;
   handleQueue(track: TrackType): number;
   getTrackBitrate(filePath: string): Promise<number>;
   getNextTrack(): TrackType;
