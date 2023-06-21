@@ -69,7 +69,7 @@ class Queue implements IQueue {
   async loadTrack(filePath: string, metadata: MetadataType, user?: string): Promise<number> {
     const bitrate = await this.getTrackBitrate(filePath);
     const track: TrackType = { filepath: filePath, bitrate, queue: true, user: user || "", metadata };
-    const title = filePath.split("\\")[1].replace(".mp3", "");
+    const title = filePath.split("/")[1].replace(".mp3", "");
 
     console.log(`Loaded a new song! ${title}`);
 
@@ -152,7 +152,7 @@ class Queue implements IQueue {
 
           playlist.tracks = this.tracks;
 
-          fs.writeFile(`tracks-2/playlist.json`, JSON.stringify(playlist), (err) => {
+          fs.writeFile(`tracks/playlist.json`, JSON.stringify(playlist), (err) => {
             if (err) console.log("Não foi possível salvar o arquivo da playlist");
             else console.log("Playlist atualizada com sucesso");
           });
