@@ -30,7 +30,7 @@ class Media implements IMedia {
       } */
 
       const trackTitle = metadata.videoDetails.title.replace(/[&\?:|\\\/|]/gi, "");
-      const filepath = `${this.basePath}\\${trackTitle}.mp3`;
+      const filepath = `${this.basePath}/${trackTitle}.mp3`;
 
       ffmpeg(videoStream)
         .audioBitrate(128)
