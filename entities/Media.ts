@@ -40,7 +40,7 @@ class Media implements IMedia {
         )
         .save(filepath)
         .on("end", async () => {
-          const queueLength = await this.queue.loadTrack(`tracks\\${trackTitle}.mp3`, { title, artist }, user);
+          const queueLength = await this.queue.loadTrack(`tracks/${trackTitle}.mp3`, { title, artist }, user);
           resolve(queueLength);
         })
         .on("error", (err) => {
