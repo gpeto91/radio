@@ -45,7 +45,7 @@ class Media implements IMedia {
         })
         .on("error", (err) => {
           console.log(`Erro no título:`, trackTitle);
-          reject("Não foi possível baixar o link fornecido");
+          reject(`Não foi possível baixar o link fornecido: ${this.basePath}`);
         })
     });
   }
