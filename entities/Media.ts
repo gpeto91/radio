@@ -19,8 +19,9 @@ class Media implements IMedia {
 
   async downloadVideo(url: string, title: string, artist: string, user?: string): Promise<number> {
     return new Promise(async (resolve, reject) => {
-      const videoStream = ytdl(url, { quality: "highestaudio" });
-      const metadata = await ytdl.getBasicInfo(url, { lang: "pt-BR" });
+      const audioStream = ytdl(url, { filter: "audioonly" });
+      const metadata = await ytdl.getBasicInfo(url);
+      
       // const category = metadata.videoDetails.category;
 
       //TODO verificar necessidade da validação por categoria
@@ -30,9 +31,9 @@ class Media implements IMedia {
       } */
 
       const trackTitle = metadata.videoDetails.title.replace(/[&\?:|\\\/|]/gi, "");
-      const filepath = `${this.basePath}/${trackTitle}.mp3`;
+      const filepath = path.resolve(`${this.basePath}/${trackTitle}.mp3`);
 
-      ffmpeg(videoStream)
+      ffmpeg(audioStream)
         .audioBitrate(128)
         .toFormat("mp3")
         .outputOptions(
@@ -41,6 +42,7 @@ class Media implements IMedia {
         .save(filepath)
         .on("end", async () => {
           const queueLength = await this.queue.loadTrack(`tracks/${trackTitle}.mp3`, { title, artist }, user);
+          
           resolve(queueLength);
         })
         .on("error", (err) => {
