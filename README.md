@@ -1,3 +1,6 @@
+# Disclaimer
+This project is a work in progress that will change, feature and code wise, trying to improve experience both for listeners and developers willing to help ;)
+
 # HOW TO RUN
 
 ```git clone https://github.com/gpeto91/radio.git```
@@ -5,6 +8,14 @@
 ```npm install```
 
 create a folder called ```tracks``` on the root directory
+
+inside folder ```tracks```, create a file with the name ```playlist.json``` with below content:
+
+```json
+{
+  "tracks": []
+}
+```
 
 create a ```.env``` file in the root directory with a PORT property. You can choose anyone you want. Ex.: PORT=8000
 
@@ -20,7 +31,10 @@ create a ```.env``` file in the root directory with a PORT property. You can cho
 
 ```json
 {
-  "url": "https://www.youtube.com/watch?v=EL_pBJN_O3M"
+  "url": "https://www.youtube.com/watch?v=EL_pBJN_O3M",
+  "name": "<name of who is adding the music>",
+  "artist": "El Huervo",
+  "title": "Daisuke"
 }
 ```
 
@@ -32,4 +46,4 @@ When a user adds a new song it will be queued right before the first non queued 
 
 ## KNOWN BUGS
 
- * Some titles from youtube's video may have some symbols that breaks the conversion and the ```POST /insert``` will returns a 500 error at the moment.
+ * Sometimes some songs may cause the radio to stop streaming, disconecting all clients but the service is still running. Requiring that the listeners refresh the page to continue listening the radio.
