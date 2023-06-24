@@ -17,7 +17,7 @@ class Media implements IMedia {
     this.queue = queue;
   }
 
-  async downloadVideo(url: string, title: string, artist: string, user?: string): Promise<number> {
+  async downloadVideo(url: string, socketId: string, title: string, artist: string, user?: string): Promise<number> {
     return new Promise(async (resolve, reject) => {
       const audioStream = ytdl(url, { filter: "audioonly" });
       const metadata = await ytdl.getBasicInfo(url);

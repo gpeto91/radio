@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import queue from './entities/Queue';
 import media from './entities/Media';
+import processor from './entities/Processor';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 (async () => {
   queue.loadTracks("tracks");
   queue.loadIo(io);
+  processor.setLoadIo(io);
 
   app.get('/', (req: Request, res: Response) => {
     res.send('Guarani Radio API is running');
@@ -46,21 +48,16 @@ app.use(express.json());
     const user = req.body.user;
     const title = req.body.title;
     const artist = req.body.artist;
+    const socketId = req.body.socketId;
   
     if (!url) return res.status(400).send({ message: "URL do vídeo não fornecida" });
     if (!title) return res.status(400).send({ message: "Título da música não fornecida" });
     if (!artist) return res.status(400).send({ message: "Artista da música não fornecido" });
+    if (!socketId) return res.status(400).send({ message: "Houve um problema com o socket. Você precisa recarregar a página" });
   
-    try {
-      const queueLength = await media.downloadVideo(url, title, artist, user);
+    processor.add({url, socketId, title, artist, user});
 
-      const message = queueLength === 0 ? "Música adiciona à lista. Sua música será a próxima!" : queueLength === 1 ? "Música adiciona à lista. Tem uma música a frente da sua." : `Música adicionada à lista. Tem ${queueLength} músicas na frente da sua.`
-  
-      res.status(200).send({ message });
-    } catch(err) {
-      res.status(500).send({ message: err });
-    }
-    
+    res.status(200).send({ message: "Obrigado por participar! 🎉 Em breve receberá notificação da sua música" });
   });
 
   io.on("connection", (socket) => {
@@ -69,6 +66,8 @@ app.use(express.json());
     socket.on("disconnect", () => {
       console.log("socket user disconnected:", socket.id);
     })
+
+    socket.emit("socket-id", socket.id);
 
     if (queue.currentTrack) {
       const { user, metadata } = queue.currentTrack;
