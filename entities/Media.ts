@@ -41,7 +41,13 @@ class Media implements IMedia {
         )
         .save(filepath)
         .on("end", async () => {
-          const queueLength = await this.queue.loadTrack(`tracks/${trackTitle}.mp3`, { title, artist }, user);
+          await this.queue.loadTrack(`tracks/${trackTitle}.mp3`, { title, artist }, user);
+
+          let queueLength = this.queue.tracks.filter((track) => track.queue).length
+
+          if (this.queue.currentTrack?.queue && this.queue.tracks.length > 1) {
+            queueLength--;
+          }
           
           resolve(queueLength);
         })

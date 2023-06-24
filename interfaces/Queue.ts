@@ -21,8 +21,17 @@ export interface PlaylistFile {
   tracks: TrackType[];
 }
 
+export type WriteJSONAction = "insert" | "update";
+
+export interface WriteJsonPayload {
+  action: WriteJSONAction;
+  data?: TrackType;
+}
+
 export declare class IQueue {
   constructor();
+  tracks: TrackType[];
+  currentTrack?: TrackType;
   broadcast(chunk: Buffer): void;
   addClient(): {
     id: string;
@@ -30,8 +39,8 @@ export declare class IQueue {
   };
   removeClient(id: string): void;
   loadTracks(dir: string): void;
-  loadTrack(filePath: string, metadata: MetadataType, user?: string): Promise<number>;
-  handleQueue(track: TrackType): number;
+  loadTrack(filePath: string, metadata: MetadataType, user?: string): Promise<void>;
+  writeJson(): void;
   getTrackBitrate(filePath: string): Promise<number>;
   getNextTrack(): TrackType;
   pause(): void;

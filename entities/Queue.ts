@@ -2,7 +2,7 @@ import { readdir } from "fs/promises";
 import { extname, join } from "path";
 import fs from "fs";
 
-import { IQueue, MetadataType, PlaylistFile, TrackType } from "../interfaces/Queue";
+import { IQueue, MetadataType, PlaylistFile, TrackType, WriteJSONAction, WriteJsonPayload } from "../interfaces/Queue";
 import { ffprobe } from "@dropb/ffprobe";
 import ffprobeStatic from "ffprobe-static";
 import { ReadStream, createReadStream } from "fs";
@@ -15,13 +15,15 @@ ffprobe.path = ffprobeStatic.path;
 
 class Queue implements IQueue {
   private clients: Map<string, PassThrough>;
-  private tracks: TrackType[];
+  public tracks: TrackType[];
   private index: number;
   public currentTrack: TrackType | undefined;
   private stream: ReadStream | undefined;
   private throttle: Throttle;
   private playing: boolean;
   private io: Server | null;
+  private writeQueue: WriteJsonPayload[];
+  private writing: boolean;
 
   constructor() {
     this.clients = new Map();
@@ -30,16 +32,67 @@ class Queue implements IQueue {
     this.throttle = new Throttle(128000 / 8);
     this.playing = false;
     this.io = null;
+    this.writeQueue = [];
+    this.writing = false;
   }
 
   loadIo(io: Server): void {
-      this.io = io;
+    this.io = io;
   }
 
   broadcast(chunk: Buffer): void {
     this.clients.forEach((client) => {
       client.write(chunk);
     })
+  }
+
+  writeJson(): void {
+    if (this.writeQueue.length === 0) {
+      this.writing = false;
+      return;
+    }
+
+    this.writing = true;
+    const { action, data } = this.writeQueue.shift() as WriteJsonPayload;
+    const playlist: PlaylistFile = { tracks: [] }
+
+    switch (action) {
+      case "insert":
+        const newTrack = data as TrackType;
+        const temp = this.tracks.slice(this.index);
+        const find = temp.findIndex((track) => !track.queue);
+        const position = find === -1 ? 0 : find;
+
+        this.tracks.splice((position + this.index), 0, newTrack);
+
+        playlist.tracks = this.tracks;
+
+        fs.writeFile(`tracks/playlist.json`, JSON.stringify(playlist), (err) => {
+          if (err) console.log("Não foi possível salvar o arquivo da playlist");
+          else console.log("Playlist salva com sucesso");
+
+          if (!this.playing && this.tracks.length === 1) this.play(true);
+
+          this.writeJson();
+        });
+
+        break;
+      case "update":
+        (this.currentTrack as TrackType).queue = false;
+
+        this.tracks.splice(this.index - 1, 1, this.currentTrack as TrackType);
+
+        playlist.tracks = this.tracks;
+
+        fs.writeFile(`tracks/playlist.json`, JSON.stringify(playlist), (err) => {
+          if (err) console.log("Não foi possível salvar o arquivo da playlist");
+          else console.log("Playlist atualizada com sucesso");
+
+          this.writeJson();
+        });
+
+        break;
+    }
   }
 
   async getTrackBitrate(filePath: string): Promise<number> {
@@ -66,41 +119,18 @@ class Queue implements IQueue {
     });
   }
 
-  async loadTrack(filePath: string, metadata: MetadataType, user?: string): Promise<number> {
+  async loadTrack(filePath: string, metadata: MetadataType, user?: string): Promise<void> {
     const bitrate = await this.getTrackBitrate(filePath);
     const track: TrackType = { filepath: filePath, bitrate, queue: true, user: user || "", metadata };
     const title = filePath.split("/")[1].replace(".mp3", "");
 
     console.log(`Loaded a new song! ${title}`);
 
-    return this.handleQueue(track);
-  }
-
-  handleQueue(track: TrackType): number {
-    const temp = this.tracks.slice(this.index);
-    const find = temp.findIndex((track) => !track.queue);
-    const position = find === -1 ? 0 : find;
-    const playlist: PlaylistFile = { tracks: [] }
-    let queueLength;
-
-    this.tracks.splice((position + this.index), 0, track);
-
-    playlist.tracks = this.tracks;
-
-    fs.writeFile(`tracks/playlist.json`, JSON.stringify(playlist), (err) => {
-      if (err) console.log("Não foi possível salvar o arquivo da playlist");
-      else console.log("Playlist salva com sucesso");
-    });
-
-    if (!this.playing) this.play(true);
-
-    queueLength = this.tracks.filter((track) => track.queue).length - 1;
-
-    if (this.currentTrack?.queue && this.tracks.length > 1) {
-      queueLength--;
+    this.writeQueue.push({ action: "insert", data: track });
+    
+    if (!this.writing) {
+      this.writeJson();
     }
-
-    return queueLength;
   }
 
   getNextTrack(): TrackType {
@@ -144,21 +174,14 @@ class Queue implements IQueue {
       .on("data", (chunk) => this.broadcast(chunk))
       .on("end", () => {
         if (this.currentTrack && this.currentTrack?.queue) {
-          const playlist: PlaylistFile = { tracks: [] };
+          this.writeQueue.push({ action: "update" });
           
-          this.currentTrack.queue = false;
-
-          this.tracks.splice(this.index - 1, 1, this.currentTrack);
-
-          playlist.tracks = this.tracks;
-
-          fs.writeFile(`tracks/playlist.json`, JSON.stringify(playlist), (err) => {
-            if (err) console.log("Não foi possível salvar o arquivo da playlist");
-            else console.log("Playlist atualizada com sucesso");
-          });
+          if (!this.writing) {
+            this.writeJson();
+          }
         }
 
-        this.play(true)
+        this.play(true);
       })
       .on("error", (error) => {
         console.log(error);
