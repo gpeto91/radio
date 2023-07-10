@@ -44,13 +44,13 @@ class Media implements IMedia {
         .on("end", async () => {
           await this.queue.loadTrack(`tracks/${trackTitle}.mp3`, { title, artist }, user);
 
-          let queueLength = this.queue.tracks.filter((track) => track.queue).length
+          let queueLength = this.queue.tracks.filter((track) => track.queue).length - 1
 
-          if (this.queue.currentTrack?.queue && this.queue.tracks.length > 1) {
+          if (this.queue.currentTrack?.queue) {
             queueLength--;
           }
           
-          resolve(queueLength);
+          resolve(queueLength >= 0 ? queueLength : 0);
         })
         .on("error", (err) => {
           console.log(`Erro no título:`, trackTitle);

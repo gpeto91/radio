@@ -61,9 +61,12 @@ class Queue implements IQueue {
         const newTrack = data as TrackType;
         const temp = this.tracks.slice(this.index);
         const find = temp.findIndex((track) => !track.queue);
-        const position = find === -1 ? 0 : find;
 
-        this.tracks.splice((position + this.index), 0, newTrack);
+        if (find === -1) {
+          this.tracks.push(newTrack);
+        } else {
+          this.tracks.splice((find + this.index), 0, newTrack);
+        }
 
         playlist.tracks = this.tracks;
 
