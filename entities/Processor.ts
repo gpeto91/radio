@@ -1,5 +1,4 @@
-import { Server, Socket } from "socket.io";
-import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import { Server } from "socket.io";
 import { IMedia } from "../interfaces/Media";
 import { DownloadParams, IProcessor } from "../interfaces/Processor";
 import media from "./Media";
@@ -40,7 +39,7 @@ class Processor implements IProcessor {
       try {
         const queueLength = await this.media.downloadVideo(data.url, data.socketId, data.title, data.artist, data.user);
         const message = queueLength === 0 ? 
-          `Música adicionada! Sua músiva será a próxima 🎵` :
+          `Música adicionada! Sua música será a próxima 🎵` :
           queueLength === 1 ?
           `Música adicionada! Tem uma música na frente da sua` :
           `Música adicionada! Tem ${queueLength} músicas na frente da sua`;
