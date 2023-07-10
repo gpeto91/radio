@@ -35,6 +35,7 @@ class Media implements IMedia {
 
       ffmpeg(audioStream)
         .audioBitrate(128)
+        .audioFrequency(44100)
         .toFormat("mp3")
         .outputOptions(
           '-metadata', `title=${trackTitle}`

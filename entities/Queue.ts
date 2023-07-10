@@ -99,7 +99,7 @@ class Queue implements IQueue {
     const data = await ffprobe(filePath);
     const bitrate = data?.format?.bit_rate;
 
-    return bitrate ? parseInt(bitrate) : 128000;
+    return bitrate ? Number(bitrate) : 128000;
   }
 
   loadTracks(dir: string): void {
