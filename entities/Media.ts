@@ -19,6 +19,8 @@ class Media implements IMedia {
 
   async downloadVideo(url: string, socketId: string, title: string, artist: string, user?: string): Promise<number> {
     return new Promise(async (resolve, reject) => {
+      console.log("baixando música...");
+
       const audioStream = ytdl(url, { filter: "audioonly" });
 
       try {
@@ -43,13 +45,10 @@ class Media implements IMedia {
             resolve(queueLength >= 0 ? queueLength : 0);
           })
           .on("error", (err) => {
-            console.log(`Erro no título:`, trackTitle);
-            console.log(err);
             reject(`Não foi possível baixar o link fornecido`);
           })
       } catch (err) {
-        reject(err);
-        return;
+        reject(`Não foi possível obter informações do link fornecido`);
       }
 
 
