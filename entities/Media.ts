@@ -20,10 +20,10 @@ class Media implements IMedia {
   async downloadVideo(url: string, socketId: string, title: string, artist: string, user?: string): Promise<number> {
     return new Promise(async (resolve, reject) => {
       try {
-        const audioStream = ytdl(url + "?bpctr=9999999999&has_verified=1", { filter: "audioonly" });
-        const metadata = await ytdl.getBasicInfo(url);
-        const trackTitle = metadata.videoDetails.title.replace(/[&\?:|\\\/|]/gi, "");
-        const filepath = path.resolve(`${this.basePath}/${trackTitle}.mp3`);
+        const audioStream = ytdl(url, { filter: "audioonly" });
+        // const metadata = await ytdl.getBasicInfo(url);
+        // const trackTitle = metadata.videoDetails.title.replace(/[&\?:|\\\/|]/gi, "");
+        const filepath = path.resolve(`${this.basePath}/${artist} - ${title}.mp3`);
 
         ffmpeg(audioStream)
           .audioBitrate(128)
@@ -31,7 +31,7 @@ class Media implements IMedia {
           .toFormat("mp3")
           .save(filepath)
           .on("end", async () => {
-            await this.queue.loadTrack(`tracks/${trackTitle}.mp3`, { title, artist }, user);
+            await this.queue.loadTrack(`tracks/${artist} - ${title}.mp3`, { title, artist }, user);
 
             let queueLength = this.queue.tracks.filter((track) => track.queue).length - 1
 
