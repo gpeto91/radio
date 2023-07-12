@@ -19,11 +19,8 @@ class Media implements IMedia {
 
   async downloadVideo(url: string, socketId: string, title: string, artist: string, user?: string): Promise<number> {
     return new Promise(async (resolve, reject) => {
-      console.log("baixando música...");
-
-      const audioStream = ytdl(url, { filter: "audioonly" });
-
       try {
+        const audioStream = ytdl(url, { filter: "audioonly" });
         const metadata = await ytdl.getBasicInfo(url);
         const trackTitle = metadata.videoDetails.title.replace(/[&\?:|\\\/|]/gi, "");
         const filepath = path.resolve(`${this.basePath}/${trackTitle}.mp3`);
