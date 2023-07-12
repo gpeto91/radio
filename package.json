@@ -21,7 +21,7 @@
     "socket.io": "^4.6.2",
     "throttle": "^1.0.3",
     "uuid": "^9.0.0",
-    "ytdl-core": "^4.11.4"
+    "ytdl-core": "github:eugabrielsilva/node-ytdl-core"
   },
   "devDependencies": {
     "@types/express": "^4.17.17",
