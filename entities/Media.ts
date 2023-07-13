@@ -1,4 +1,5 @@
 import fs from "fs";
+import Os from "os";
 import ytdl from "ytdl-core";
 import YTDlpWrap from "yt-dlp-wrap";
 import ffmpegPath from "@ffmpeg-installer/ffmpeg";
@@ -21,7 +22,8 @@ class Media implements IMedia {
   }
 
   async loadYtDlp() {
-    this.ytDlpWrap = new YTDlpWrap(path.resolve(__dirname, '../../bin/yt-dlp.exe'));
+    const ytDlpBin = Os.platform() === "win32" ? path.resolve(__dirname, '../../bin/yt-dlp.exe') : path.resolve(__dirname, '../../bin/yt-dlp_linux');
+    this.ytDlpWrap = new YTDlpWrap(ytDlpBin);
   }
 
   async downloadVideo(url: string, socketId: string, title: string, artist: string, user?: string): Promise<number> {
@@ -29,9 +31,7 @@ class Media implements IMedia {
       try {
         this.ytDlpWrap?.exec([
           url,
-          '--geo-bypass',
-          '-f',
-          'best',
+          '--geo-bypass-country BR',
           '-o',
           `${this.basePath}/temp.mp4`
         ])
