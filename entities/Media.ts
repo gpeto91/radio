@@ -32,7 +32,7 @@ class Media implements IMedia {
         this.ytDlpWrap?.exec([
           url,
           '--proxy',
-          '201.95.254.137:3128',
+          '177.93.45.156:999',
           '--xff',
           'br',
           '-o',
