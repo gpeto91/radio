@@ -31,8 +31,10 @@ class Media implements IMedia {
       try {
         this.ytDlpWrap?.exec([
           url,
+          '--proxy',
+          '201.95.254.137',
           '--xff',
-          'default',
+          'br',
           '-o',
           `${this.basePath}/temp.mp4`
         ])
