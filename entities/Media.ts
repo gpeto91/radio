@@ -32,7 +32,7 @@ class Media implements IMedia {
         this.ytDlpWrap?.exec([
           url,
           '--xff',
-          'never',
+          'default',
           '-o',
           `${this.basePath}/temp.mp4`
         ])
