@@ -21,6 +21,7 @@ app.use(express.json());
   queue.loadTracks("tracks");
   queue.loadIo(io);
   processor.setLoadIo(io);
+  media.loadYtDlp();
 
   app.get('/', (req: Request, res: Response) => {
     res.send('Guarani Radio API is running');

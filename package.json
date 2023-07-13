@@ -21,6 +21,7 @@
     "socket.io": "^4.6.2",
     "throttle": "^1.0.3",
     "uuid": "^9.0.0",
+    "yt-dlp-wrap": "^2.3.11",
     "ytdl-core": "github:eugabrielsilva/node-ytdl-core"
   },
   "devDependencies": {
