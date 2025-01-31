@@ -1,4 +1,5 @@
 import ytdl from "@distube/ytdl-core";
+import fs from "fs";
 import ffmpegPath from "@ffmpeg-installer/ffmpeg";
 import ffmpeg from "fluent-ffmpeg";
 import path from "path";
@@ -18,16 +19,13 @@ class Media implements IMedia {
   }
 
   async downloadVideo(url: string, socketId: string, title: string, artist: string, user?: string): Promise<number> {
+    const agent = ytdl.createAgent(JSON.parse(fs.readFileSync("cookies.json", "utf-8")));
+    
     return new Promise(async (resolve, reject) => {
       try {
         const audioStream = ytdl(url, { 
+          agent,
           filter: "audioonly",
-          requestOptions: { 
-            headers: {
-              cookie: process.env.YT_COOKIE,
-              "x-youtube-identity-token": process.env.YT_TOKEN
-            }
-          } 
         });
         // const metadata = await ytdl.getBasicInfo(url);
         // const trackTitle = metadata.videoDetails.title.replace(/[&\?:|\\\/|]/gi, "");
