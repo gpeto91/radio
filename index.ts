@@ -13,8 +13,8 @@ const IS_LOCAL = process.argv.includes('--local');
 dotenv.config();
 
 const options = {
-  cert: fs.readFileSync("/etc/letsencrypt/archive/guarani-radio.ddns.net/fullchain1.pem"),
-  key: fs.readFileSync("/etc/letsencrypt/archive/guarani-radio.ddns.net/privkey1.pem")
+  cert: fs.readFileSync("/home/ec2-user/radio/certs/fullchain.pem"),
+  key: fs.readFileSync("/home/ec2-user/radio/certs/privkey.pem")
 }
 
 const app: Express = express();
