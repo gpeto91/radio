@@ -1,17 +1,25 @@
 import express, { Express, Request, Response } from 'express';
 import { Server } from "socket.io";
+import https from "https";
 import http from "http";
+import fs from "fs";
 import cors from 'cors';
 import dotenv from 'dotenv';
 import queue from './entities/Queue';
-import media from './entities/Media';
 import processor from './entities/Processor';
+
+const IS_LOCAL = process.argv.includes('--local');
 
 dotenv.config();
 
+const options = {
+  cert: fs.readFileSync("/etc/letsencrypt/live/guarani-radio.ddns.net/fullchain.pem"),
+  key: fs.readFileSync("/etc/letsencrypt/live/guarani-radio.ddns.net/privkey.pem")
+}
+
 const app: Express = express();
 const port = process.env.PORT;
-const server = http.createServer(app);
+const server = IS_LOCAL ?  http.createServer(app) : https.createServer(options, app);
 const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(cors());
@@ -75,9 +83,16 @@ app.use(express.json());
     }
     
   });
+
+  if (IS_LOCAL) {
+    server.listen(port, () => {
+      console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+    });
+  } else {
+    server.listen(443, () => {
+      console.log(`⚡️[server]: Server is running at https://guarani-radio.ddns.net:443`);
+    });
+  }
   
-  server.listen(port, () => {
-    console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
-  });
 
 })();
