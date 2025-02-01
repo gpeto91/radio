@@ -27,8 +27,7 @@ class Media implements IMedia {
           agent,
           filter: "audioonly",
         });
-        // const metadata = await ytdl.getBasicInfo(url);
-        // const trackTitle = metadata.videoDetails.title.replace(/[&\?:|\\\/|]/gi, "");
+        
         const filepath = path.resolve(`${this.basePath}/${artist} - ${title}.mp3`);
 
         ffmpeg(audioStream)
@@ -48,20 +47,12 @@ class Media implements IMedia {
             resolve(queueLength >= 0 ? queueLength : 0);
           })
           .on("error", (err) => {
+            console.log(err);
             reject(`Não foi possível baixar o link fornecido`);
           })
       } catch (err) {
         reject(`Não foi possível obter informações do link fornecido`);
       }
-
-
-      // const category = metadata.videoDetails.category;
-
-      //TODO verificar necessidade da validação por categoria
-      /* if (category !== "Music") {
-        reject("Verifique se o link fornecido é uma música");
-        return;
-      } */
     });
   }
 }
