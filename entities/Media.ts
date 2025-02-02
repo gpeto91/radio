@@ -19,18 +19,10 @@ class Media implements IMedia {
   }
 
   async downloadVideo(url: string, socketId: string, title: string, artist: string, user?: string): Promise<number> {
-    const agent = ytdl.createAgent(JSON.parse(fs.readFileSync("cookies.json", "utf-8")));
-    
     return new Promise(async (resolve, reject) => {
       try {
-        const audioStream = ytdl(url, { 
-          agent,
+        const audioStream = ytdl(url, {
           filter: "audioonly",
-          requestOptions: {
-            headers: {
-              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
-            }
-          }
         });
         
         const filepath = path.resolve(`${this.basePath}/${artist} - ${title}.mp3`);
