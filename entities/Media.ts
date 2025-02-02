@@ -1,4 +1,4 @@
-import ytdl from "ytdl-core";
+import ytdl from "@distube/ytdl-core";
 import fs from "fs";
 import ffmpegPath from "@ffmpeg-installer/ffmpeg";
 import ffmpeg from "fluent-ffmpeg";
@@ -7,7 +7,6 @@ import queue from "./Queue";
 
 import { IMedia } from "../interfaces/Media";
 import { IQueue } from "../interfaces/Queue";
-import { HttpsProxyAgent } from "https-proxy-agent";
 
 ffmpeg.setFfmpegPath(ffmpegPath.path);
 
@@ -22,12 +21,11 @@ class Media implements IMedia {
   async downloadVideo(url: string, socketId: string, title: string, artist: string, user?: string): Promise<number> {
     return new Promise(async (resolve, reject) => {
       try {
-        const proxyUrl = "https://200.174.198.86:8888";
-        const agent = new HttpsProxyAgent(proxyUrl);
-        
+        const agent = ytdl.createAgent(JSON.parse(fs.readFileSync("cookies.json", "utf-8")));
+
         const audioStream = ytdl(url, {
+          agent,
           filter: "audioonly",
-          requestOptions: { agent },
         });
         
         const filepath = path.resolve(`${this.basePath}/${artist} - ${title}.mp3`);
