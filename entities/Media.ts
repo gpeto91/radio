@@ -30,12 +30,19 @@ class Media implements IMedia {
   ): Promise<number> {
     return new Promise(async (resolve, reject) => {
       try {
-        const cookie = await this.YoutubeCookie.getLatestCookie();
-        const agent = ytdl.createAgent(cookie);
+        const cookies = await this.YoutubeCookie.getLatestCookie();
+        const agent = ytdl.createAgent(cookies);
 
         const audioStream = ytdl(url, {
           agent,
           filter: "audioonly",
+          requestOptions: {
+            headers: {
+              "x-youtube-identity-token": process.env.YT_TOKEN,
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+            },
+          },
         });
 
         const filepath = path.resolve(
@@ -45,6 +52,7 @@ class Media implements IMedia {
         ffmpeg(audioStream)
           .audioBitrate(128)
           .audioFrequency(44100)
+          .outputOptions("-movflags frag_keyframe+empty_moov")
           .toFormat("mp3")
           .save(filepath)
           .on("end", async () => {

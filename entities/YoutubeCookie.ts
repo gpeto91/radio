@@ -40,6 +40,19 @@ export class YoutubeCookie implements IYoutubeCookie {
 
       console.log("logou");
 
+      await page.waitForFunction(
+        () => (window as any).ytcfg && (window as any).ytcfg.get("ID_TOKEN"),
+        {
+          timeout: 5000,
+        }
+      );
+
+      const identityToken = await page.evaluate(() =>
+        (window as any).ytcfg.get("ID_TOKEN")
+      );
+
+      console.log("identityToken", identityToken);
+
       const cookies = await page.cookies();
 
       await browser.close();
